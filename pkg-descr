@@ -1,0 +1,6 @@
+Mithril is a research project which goal is to provide
+Stake-based Threshold Multisignatures on top of the Cardano Network.
+
+A Protocol that allows stakeholders in a Proof-of-Stake blockchain network
+to individually sign messages that are aggregated into a multi signature 
+which guarantees that they represent a minimum share of the total stakes.
