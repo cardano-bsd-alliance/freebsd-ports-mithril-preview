@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# PROVIDE: mithril_signer_preview
+# REQUIRE: DAEMON cardano_node_preview
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf to enable this service:
+#
+# mithril_signer_preview_enable:	Set to YES to enable Mithril Signer.
+#                                   Default: "NO"
+#
+# mithril_signer_preview_home:		An absolute path to the daemon home directory.
+#                                   The directory will be created if not exists.
+#                                   Default: "/var/db/mithril_signer_preview"
+#
+# mithril_signer_preview_flags:		Any additional command line flags to pass to Mithril.
+#                                   Default: "-vvv"
+#
+# mithril_signer_preview_cnode_db:  An absolute path to the cnode db directory.
+#                                   Default: "/var/db/cardano_node_preview/preview-db"
+#
+
+. /etc/rc.subr
+
+name=mithril_signer_preview
+desc="mithril_signer_preview daemon"
+rcvar=mithril_signer_preview_enable
+command=/usr/local/bin/mithril-signer
+
+start_cmd="${name}_start"
+start_precmd="${name}_prestart"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+
+extra_commands="status"
+
+load_rc_config $name
+: ${mithril_signer_preview_enable:=NO}
+: ${mithril_signer_preview_home:="/var/db/mithril_signer_preview"}
+: ${mithril_signer_preview_flags:="-vvv"}
+: ${mithril_signer_preview_cnode_db:="/var/db/cardano_node_preview/preview-db"}
+
+pidfile="/var/run/mithril_signer_preview.pid"
+logfile="/var/log/mithril_signer_preview.log"
+flags="${mithril_signer_preview_flags}"
+
+export NETWORK="preview"
+export AGGREGATOR_ENDPOINT="https://aggregator.pre-release-preview.api.mithril.network/aggregator"
+export RUN_INTERVAL="60000"
+export DB_DIRECTORY=${mithril_signer_preview_cnode_db}
+export CARDANO_NODE_SOCKET_PATH="/var/db/cardano_node_preview/jail/socket/cardano-node.sock"
+export CARDANO_CLI_PATH=/usr/local/bin/cardano-cli
+export DATA_STORES_DIRECTORY=/var/db/mithril_signer_preview/preview-stores
+export KES_SECRET_KEY_PATH=/var/db/mithril_signer_preview/preview-keys/kes.skey
+export OPERATIONAL_CERTIFICATE_PATH=/var/db/mithril_signer_preview/preview-keys/pool.cert
+export STORE_RETENTION_LIMIT=5
+export ERA_READER_ADAPTER_TYPE=cardano-chain
+export ERA_READER_ADAPTER_PARAMS='{"address":"addr_test1qrv5xfwh043mlc3vk5d97s4nmhxu7cmleyssvhx37gkfyejfe8d38v3vsfgetjafgrsdc49krug8wf04h5rmtengtejqlxrksk",
+                                    "verification_key":"5b35352c3232382c3134342c38372c3133382c3133362c34382c382c31342c3138372c38352c3134382c39372c3233322c3235352c3232392c33382c3234342c3234372c3230342c3139382c31332c33312c3232322c32352c3136342c35322c3130322c39312c3132302c3230382c3134375d"}'
+
+sanity_check()
+{
+    #if [ ! -f ${mithril_config} ]
+    #then
+    #    echo "Invalid value for mithril_config: missing file ${mithril_config}"
+    #    exit 1
+    #fi
+    return 0
+}
+
+mithril_signer_preview_prestart()
+{
+    # Create mithril home directory, if does not exist
+    if [ ! -d "${mithril_signer_preview_home}/preview-stores" ]; then
+        mkdir -p "${mithril_signer_preview_home}/preview-stores"
+        mkdir -p "${mithril_signer_preview_home}/preview-keys"
+    fi
+
+    sanity_check
+}
+
+mithril_signer_preview_start()
+{
+    check_startmsgs && echo "Starting ${name}."
+    cd $mithril_signer_preview_home && /usr/sbin/daemon -p $pidfile -o ${logfile} \
+        ${command} ${flags} 2>&1 > /dev/null
+}
+
+mithril_signer_preview_stop()
+{
+    pid=$(check_pidfile "${pidfile}" "${command}")
+    if [ -z "${pid}" ]
+    then
+        echo "${name} is not running"
+        return 1
+    else
+        echo "Stopping ${name}."
+        /bin/kill -INT "$pid"
+        wait_for_pids "$pid"
+    fi
+}
+
+
+mithril_signer_preview_status()
+{
+    pid=$(check_pidfile "${pidfile}" "${command}")
+    if [ -z "${pid}" ]
+    then
+      echo "${name} is not running"
+      return 1
+    else
+      echo ${name} is running as pid $pid
+    fi
+}
+
+run_rc_command "$1"
