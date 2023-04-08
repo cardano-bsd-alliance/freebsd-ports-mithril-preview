@@ -6,18 +6,21 @@
 #
 # Add the following lines to /etc/rc.conf to enable this service:
 #
-# mithril_signer_preview_enable:	Set to YES to enable Mithril Signer.
-#                                   Default: "NO"
+# mithril_signer_preview_enable:	    Set to YES to enable Mithril Signer.
+#                                       Default: "NO"
 #
-# mithril_signer_preview_home:		An absolute path to the daemon home directory.
-#                                   The directory will be created if not exists.
-#                                   Default: "/var/db/mithril_signer_preview"
+# mithril_signer_preview_home:		    An absolute path to the daemon home directory.
+#                                       The directory will be created if not exists.
+#                                       Default: "/var/db/mithril_signer_preview"
 #
-# mithril_signer_preview_flags:		Any additional command line flags to pass to Mithril.
-#                                   Default: "-vvv"
+# mithril_signer_preview_flags:		    Any additional command line flags to pass to Mithril.
+#                                       Default: "-vvv"
 #
-# mithril_signer_preview_cnode_db:  An absolute path to the cnode db directory.
-#                                   Default: "/var/db/cardano_node_preview/preview-db"
+# mithril_signer_preview_cnode_db:    An absolute path to the cnode db directory.
+#                                       Default: "/var/db/cardano_node_preview/preview-db"
+#
+# mithril_signer_preview_cnode_sock:  An absolute path to the cnode socket file.
+#                                       Default: "/var/db/cardano_node_preview/jail/socket/cardano-node.sock"
 #
 
 . /etc/rc.subr
@@ -39,6 +42,7 @@ load_rc_config $name
 : ${mithril_signer_preview_home:="/var/db/mithril_signer_preview"}
 : ${mithril_signer_preview_flags:="-vvv"}
 : ${mithril_signer_preview_cnode_db:="/var/db/cardano_node_preview/preview-db"}
+: ${mithril_signer_preview_cnode_sock:="/var/db/cardano_node_preview/jail/socket/cardano-node.sock"}
 
 pidfile="/var/run/mithril_signer_preview.pid"
 logfile="/var/log/mithril_signer_preview.log"
@@ -48,7 +52,7 @@ export NETWORK="preview"
 export AGGREGATOR_ENDPOINT="https://aggregator.pre-release-preview.api.mithril.network/aggregator"
 export RUN_INTERVAL="60000"
 export DB_DIRECTORY=${mithril_signer_preview_cnode_db}
-export CARDANO_NODE_SOCKET_PATH="/var/db/cardano_node_preview/jail/socket/cardano-node.sock"
+export CARDANO_NODE_SOCKET_PATH=${mithril_signer_preview_cnode_sock}
 export CARDANO_CLI_PATH=/usr/local/bin/cardano-cli
 export DATA_STORES_DIRECTORY=/var/db/mithril_signer_preview/preview-stores
 export KES_SECRET_KEY_PATH=/var/db/mithril_signer_preview/preview-keys/kes.skey
