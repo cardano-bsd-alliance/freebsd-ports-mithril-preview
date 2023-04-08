@@ -16,8 +16,6 @@ GH_ACCOUNT=	input-output-hk
 
 USE_RC_SUBR=	mithril_signer_preview
 
-CARGO_INSTALL=	yes
-
 PLIST_FILES=	bin/mithril-signer \
 		bin/mithril-client \
 		bin/mithril-aggregator
