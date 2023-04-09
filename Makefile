@@ -10,6 +10,8 @@ WWW=			https://mithril.network/
 
 LICENSE=	APACHE20
 
+RUN_DEPENDS=	cardano-node:net-p2p/cardano-node
+
 USES=		cargo ssl
 USE_GITHUB=	yes
 GH_ACCOUNT=	input-output-hk
